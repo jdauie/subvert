@@ -85,28 +85,75 @@ class ReplacementManager {
 	
 	public function AddRegexMatchesBasic($pattern, $replacement, $text, $handlers = NULL) {
 		$text = preg_replace_callback($pattern, function ($match) use ($replacement, $handlers) {
-			$match_str = $match[0];
+			$output = '';
 			
-			if (is_array($handlers)) {
-				$match_str = $this->AddRegexMatches($handlers, $match_str);
+			$classes = [];
+			if (is_array($replacement)) {
+				$i = 0;
+				foreach ($replacement as $class) {
+					$classes[++$i] = $class;
+				}
+			}
+			else {
+				$classes[0] = $replacement;
 			}
 			
-			// wrap the replacement pattern around each line
-			$match_lines = explode("\n", $match_str);
-			$match_lines_output = [];
-			foreach ($match_lines as $line) {
-				//$match_lines_output[] = sprintf($replacement, $line);
-				$match_lines_output[] = sprintf('<code class="%s">%s</code>', $replacement, $line);
+			foreach ($classes as $key => $class) {
+				if (!isset($match[$key])) {
+					continue;
+					//break;
+				}
+				$match_str = $match[$key];
+				
+				// somehow, I want this to work on sub-matches, not just the whole string
+				if (is_array($handlers)) {
+					// get valid handlers
+					$current_handlers = [];
+					foreach ($handlers as $handler_key => $handler_val) {
+						if (is_int($handler_key)) {
+							$current_handlers[] = $handler_val;
+						}
+						if (is_string($handler_key) && is_numeric($handler_key[0])) {
+							if (($pos = strpos($handler_key, ':')) !== false) {
+								$handler_key_index = (int)substr($handler_key, 0, $pos);
+								if ($handler_key_index === $key) {
+									$handler_key_str = substr($handler_key, $pos + 1);
+									if (!empty($handler_key_str)) {
+										$current_handlers[$handler_key_str] = $handler_val;
+									}
+									else {
+										$current_handlers[] = $handler_val;
+									}
+								}
+							}
+						}
+						else {
+							$current_handlers[$handler_key] = $handler_val;
+						}
+					}
+					$match_str = $this->AddRegexMatches($current_handlers, $match_str);
+				}
+				
+				// wrap the replacement pattern around each line
+				$element = $match_str;
+				if (!empty($class)) {
+					$match_lines = explode("\n", $match_str);
+					$match_lines_output = [];
+					foreach ($match_lines as $line) {
+						$match_lines_output[] = sprintf('<code class="%s">%s</code>', $class, $line);
+					}
+					$element = implode("\n", $match_lines_output);
+				}
+				$output .= $this->AddReplacedValue($element);
 			}
-			$element = implode("\n", $match_lines_output);
-			return $this->AddReplacedValue($element);
+			return $output;
 		}, $text);
 		return $text;
 	}
 	
 	public function AddRegexMatches(array $handlers, $text) {
 		foreach ($handlers as $key => $handler) {
-			if (is_int($key) || preg_match($key, $text)) {
+			if (is_int($key) || (!empty($key) && preg_match($key, $text))) {
 				$text = $this->AddRegexMatchesBasic(
 					$handler['pattern'],
 					$handler['wrapper'],

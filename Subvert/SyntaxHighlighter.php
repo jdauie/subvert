@@ -26,9 +26,9 @@ class SyntaxHighlighter {
 		}
 		
 		if (is_array($handlers)) {
-			foreach ($handlers as $name) {
+			foreach ($handlers as $name => $options) {
 				if (isset(self::$c_handlers[$name])) {
-					$code = call_user_func(sprintf('%s::Handle_%s', __CLASS__, self::$c_handlers[$name]), $code);
+					$code = call_user_func(sprintf('%s::Handle_%s', __CLASS__, self::$c_handlers[$name]), $code, $options);
 				}
 			}
 		}
@@ -47,28 +47,60 @@ class SyntaxHighlighter {
 	}
 	
 	private static function Handle_xml($code) {
-		return preg_replace_callback('`(&lt;/?)([^&\s!][^&\s]*+)(.*?)(&gt;)`', function ($matches) {
-			$str = preg_replace('/(\s++)([^=]++)=(\s*"[^"]*+")/', '$1<code class="xml-att">$2</code>=<code class="xml-val">$3</code>', $matches[3]);
-			return sprintf('%1$s<code class="xml-tag">%2$s</code>%3$s%4$s', $matches[1], $matches[2], $str, $matches[4]);
-		}, $code);
+		$rm = new ReplacementManager();
+		
+		$code = $rm->AddRegexMatches([
+			[
+				'pattern' => '`(&lt;/?)([^&\s!][^&\s]*+)(.*?)(&gt;)`',
+				'wrapper' => [
+					NULL,
+					'xml-tag',
+					NULL,
+					NULL,
+				],
+				'handler' => [
+					'3:' => [
+						'pattern' => '/(\s++)([^=]++)(=)(\s*"[^"]*+")/',
+						'wrapper' => [
+							NULL,
+							'xml-att',
+							NULL,
+							'xml-val',
+						]
+					]
+				]
+			],
+		], $code);
+		
+		return $code;
 	}
 	
 	private static function Handle_skhema($code) {
-		//return preg_replace('`{(.)([^}]*+)}`', '<code class="skh-del">{<code class="skh-sym">$1</code><code class="skh-tok">$2</code>}</code>', $code);
-		return preg_replace_callback('`{(.)([^}]*+)}`', function ($matches) {
-			/*switch($matches[1]) {
-				case '?': $t = 'list';break;
-				case '$': $t = 'variable';break;
-				case '#': $t = 'include';break;
-				case '@': $t = 'template';break;
-				case '.': $t = 'define';break;
-				case '%': $t = 'call';break;
-				case '^': $t = 'parent';break;
-				default: $t = '';
-			}*/
-			//class="skh-del tooltip" data-tip="%s"
-			return sprintf('<code class="skh-del">{<code class="skh-sym">%s</code><code class="skh-tok">%s</code>}</code>', $matches[1], $matches[2]);
-		}, $code);
+		$rm = new ReplacementManager();
+		
+		$code = $rm->AddRegexMatches([
+			[
+				'pattern' => '`({)(.)([^}]*+)(})`',
+				'wrapper' => [
+					'skh-del',
+					'skh-sym',
+					'skh-tok',
+					'skh-del',
+				],
+				'handler' => [
+					'3:' => [
+						'pattern' => '`(:)([^[]++)(\[[^]]*+\])?`',
+						'wrapper' => [
+							'skh-sym',
+							'keyword',
+							'xml-att',
+						]
+					]
+				]
+			],
+		], $code);
+		
+		return $code;
 	}
 	
 	private static function Handle_php_serialized($code) {
@@ -94,52 +126,6 @@ class SyntaxHighlighter {
 	
 	private static function Handle_php($code) {
 		$rm = new ReplacementManager();
-		/*
-		// comments
-		$code = $rm->AddRegexMatchesBasic(
-			[
-				self::REGEX_COMMENT_C99,
-				self::REGEX_COMMENT_C89,
-			],
-			'<code class="comment">%s</code>',
-			$code
-		);
-		
-		// strings
-		$code = $rm->AddRegexMatchesBasic(
-			self::REGEX_STRING_QUOTES,
-			'<code class="php-str">%s</code>',
-			$code,
-			[
-				'/^.\s*SELECT\s/' => [
-					'pattern' => '/BETWEEN/',
-					'wrapper' => '<code class="comment">%s</code>',
-				]
-			]
-		);
-		
-		// variables
-		$code = $rm->AddRegexMatchesBasic(
-			'|\$[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*|',
-			'<code class="php-var">%s</code>',
-			$code
-		);
-		
-		$keywords = [
-			'break', 'clone', 'endswitch', 'final', 'global', 'include_once', 'private', 'return', 'try', 'xor', 'abstract', 'callable', 'const', 'do', 'enddeclare', 'endwhile', 'finally', 'goto', 'instanceof', 'namespace', 'protected', 'static', 'yield', 'and', 'case', 'continue', 'echo', 'endfor', 'for', 'if', 'insteadof', 'new', 'public', 'switch', 'use', 'catch', 'declare', 'else', 'endforeach', 'foreach', 'implements', 'interface', 'or', 'require', 'throw', 'var', 'as', 'class', 'default', 'elseif', 'endif', 'extends', 'function', 'include', 'print', 'require_once', 'trait', 'while',
-			'__CLASS__', '__DIR__', '__FILE__', '__FUNCTION__', '__LINE__', '__METHOD__', '__NAMESPACE__', '__TRAIT__',
-			'__halt_compiler', 'die', 'empty', 'list', 'unset', 'unset', 'eval', 'array', 'exit', 'isset'
-		];
-		//$keywords_pattern = sprintf('/\b(%s)\b/', implode('|', $keywords));
-		//$code = preg_replace($keywords_pattern, '<span class="keyword">\0</span>', $code);
-		$code = $rm->AddRegexMatchesBasic(
-			sprintf('/\b(%s)\b/', implode('|', $keywords)),
-			'<code class="keyword">%s</code>',
-			$code
-		);
-		
-		$code = $rm->Reconstitute($code);
-		*/
 		
 		$php_keywords = [
 			'break', 'clone', 'endswitch', 'final', 'global', 'include_once', 'private', 'return', 'try', 'xor', 'abstract', 'callable', 'const', 'do', 'enddeclare', 'endwhile', 'finally', 'goto', 'instanceof', 'namespace', 'protected', 'static', 'yield', 'and', 'case', 'continue', 'echo', 'endfor', 'for', 'if', 'insteadof', 'new', 'public', 'switch', 'use', 'catch', 'declare', 'else', 'endforeach', 'foreach', 'implements', 'interface', 'or', 'require', 'throw', 'var', 'as', 'class', 'default', 'elseif', 'endif', 'extends', 'function', 'include', 'print', 'require_once', 'trait', 'while',
@@ -182,7 +168,6 @@ class SyntaxHighlighter {
 			],
 		], $code);
 		
-		
 		return $code;
 	}
 	
@@ -213,7 +198,6 @@ class SyntaxHighlighter {
 			'add', 'alias', 'ascending', 'async', 'await', 'descending', 'dynamic', 'from', 'get', 'global', 'group', 'into', 'join', 'let', 'orderby', 'partial', 'remove', 'select', 'set', 'value', 'var', 'where', 'yield'
 		];
 		//$keywords_pattern = sprintf('/\b(%s)\b/', implode('|', $keywords));
-		//$code = preg_replace($keywords_pattern, '<span class="keyword">\0</span>', $code);
 		$code = $rm->AddRegexMatchesBasic(
 			sprintf('/\b(%s)\b/', implode('|', $keywords)),
 			'keyword',

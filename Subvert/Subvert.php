@@ -185,9 +185,19 @@ class Subvert {
 					}
 					
 					$extra = isset($match['extra']) ? explode(' ', $match['extra']) : NULL;
+					$handlers = [];
+					foreach ($extra as $handler) {
+						$options = NULL;
+						if (($handler_pos = strpos($handler, '[')) !== false) {
+							$options_str = substr($handler, $handler_pos + 1, -1);
+							$options = explode(',', $options_str);
+							$handler = substr($handler, 0, $handler_pos);
+						}
+						$handlers[$handler] = $options;
+					}
 					
 					if ($this->m_enableCodeFormatting) {
-						$element = CodeFormatter::Format($code, $extra);
+						$element = CodeFormatter::Format($code, $handlers);
 					}
 					else {
 						$element = '<pre><code>'.htmlentities($code).'</code></pre>';
