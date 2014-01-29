@@ -5,7 +5,7 @@ namespace Jacere;
 class PHPSerializedCodeHandler implements ICodeHandler {
 	
 	public function Handle($code) {
-		$rm = new ReplacementManager();
+		$rm = new ReplacementManager2();
 		
 		// strings
 		$code = $rm->AddRegexMatchesBasic(

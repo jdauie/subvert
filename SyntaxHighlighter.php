@@ -2,9 +2,30 @@
 
 namespace Jacere;
 
+require_once(__dir__.'/ReplacementManager2.php');
+
 interface ICodeHandler {
 	public function Handle($code);
 }
+
+<?php
+
+namespace Jacere;
+
+require_once(__dir__.'/SQLCodeHandler.php');
+
+class BaseCodeHandler implements ICodeHandler {
+	
+	private $m_rm;
+	
+	public function Reset($rm) {
+		$this->m_rm = $rm;
+	}
+	
+	public abstract function Handle($code, $options);
+}
+
+?>
 
 class SyntaxHighlighter {
 	
