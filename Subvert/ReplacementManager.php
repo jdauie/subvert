@@ -57,32 +57,6 @@ class ReplacementManager {
 		return $code;
 	}
 	
-	/*public function AddRegexMatchesBasic2($pattern, $replacement, $text, $handlers = NULL) {
-		$patterns = is_array($pattern) ? $pattern : [$pattern];
-		foreach ($patterns as $p) {
-			if (preg_match_all($p, $text, $matches, PREG_SET_ORDER)) {
-				foreach ($matches as $match) {
-					$match_str = $match[0];
-					
-					if (is_array($handlers)) {
-						$match_str = $this->AddRegexMatches($handlers, $match_str);
-					}
-					
-					// wrap the replacement pattern around each line
-					$match_lines = explode("\n", $match_str);
-					$match_lines_output = [];
-					foreach ($match_lines as $line) {
-						$match_lines_output[] = sprintf($replacement, $line);
-					}
-					$element = implode("\n", $match_lines_output);
-					$this->Add($match[0], $element);
-				}
-				$text = $this->Replace($text);
-			}
-		}
-		return $text;
-	}*/
-	
 	public function AddRegexMatchesBasic($pattern, $replacement, $text, $handlers = NULL) {
 		$text = preg_replace_callback($pattern, function ($match) use ($replacement, $handlers) {
 			$output = '';
@@ -153,6 +127,11 @@ class ReplacementManager {
 	
 	public function AddRegexMatches(array $handlers, $text) {
 		foreach ($handlers as $key => $handler) {
+			
+			//if (is_string($handler)) {
+				//SyntaxHighlighter::Execute($code, [$handler => NULL]);
+			//}
+			
 			if (is_int($key) || (!empty($key) && preg_match($key, $text))) {
 				$text = $this->AddRegexMatchesBasic(
 					$handler['pattern'],
