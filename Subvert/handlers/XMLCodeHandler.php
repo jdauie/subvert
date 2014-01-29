@@ -5,7 +5,7 @@ namespace Jacere;
 class XMLCodeHandler implements ICodeHandler {
 	
 	public function Handle($code) {
-		$rm = new ReplacementManager();
+		$rm = new ReplacementManager2();
 		
 		$code = $rm->AddRegexMatches([
 			[

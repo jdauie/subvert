@@ -2,16 +2,22 @@
 
 namespace Jacere;
 
-class PHPCodeHandler implements ICodeHandler {
+require_once(__dir__.'/SQLCodeHandler.php');
+
+class PHPCodeHandler extends BaseCodeHandler {
 	
-	public function Handle($code) {
-		$rm = new ReplacementManager();
-		
-		$php_keywords = [
+	private $m_keywords;
+	
+	public function __construct() {
+		$this->m_keywords = [
 			'break', 'clone', 'endswitch', 'final', 'global', 'include_once', 'private', 'return', 'try', 'xor', 'abstract', 'callable', 'const', 'do', 'enddeclare', 'endwhile', 'finally', 'goto', 'instanceof', 'namespace', 'protected', 'static', 'yield', 'and', 'case', 'continue', 'echo', 'endfor', 'for', 'if', 'insteadof', 'new', 'public', 'switch', 'use', 'catch', 'declare', 'else', 'endforeach', 'foreach', 'implements', 'interface', 'or', 'require', 'throw', 'var', 'as', 'class', 'default', 'elseif', 'endif', 'extends', 'function', 'include', 'print', 'require_once', 'trait', 'while',
 			'__CLASS__', '__DIR__', '__FILE__', '__FUNCTION__', '__LINE__', '__METHOD__', '__NAMESPACE__', '__TRAIT__',
 			'__halt_compiler', 'die', 'empty', 'list', 'unset', 'unset', 'eval', 'array', 'exit', 'isset'
 		];
+	}
+	
+	public function Handle($code) {
+		$rm = new ReplacementManager2();
 		
 		$sql_keywords = [
 			'A', 'ABORT', 'ABS', 'ABSOLUTE', 'ACCESS', 'ACTION', 'ADA', 'ADD', 'ADMIN', 'AFTER', 'AGGREGATE', 'ALIAS', 'ALL', 'ALLOCATE', 'ALSO', 'ALTER', 'ALWAYS', 'ANALYSE', 'ANALYZE', 'AND', 'ANY', 'ARE', 'ARRAY', 'AS', 'ASC', 'ASENSITIVE', 'ASSERTION', 'ASSIGNMENT', 'ASYMMETRIC', 'AT', 'ATOMIC', 'ATTRIBUTE', 'ATTRIBUTES', 'AUDIT', 'AUTHORIZATION', 'AUTO_INCREMENT', 'AVG', 'AVG_ROW_LENGTH', 'BACKUP', 'BACKWARD', 'BEFORE', 'BEGIN', 'BERNOULLI', 'BETWEEN', 'BIGINT', 'BINARY', 'BIT', 'BIT_LENGTH', 'BITVAR', 'BLOB', 'BOOL', 'BOOLEAN', 'BOTH', 'BREADTH', 'BREAK', 'BROWSE', 'BULK', 'BY', 'C', 'CACHE', 'CALL', 'CALLED', 'CARDINALITY', 'CASCADE', 'CASCADED', 'CASE', 'CAST', 'CATALOG', 'CATALOG_NAME', 'CEIL', 'CEILING', 'CHAIN', 'CHANGE', 'CHAR', 'CHAR_LENGTH', 'CHARACTER', 'CHARACTER_LENGTH', 'CHARACTER_SET_CATALOG', 'CHARACTER_SET_NAME', 'CHARACTER_SET_SCHEMA', 'CHARACTERISTICS', 'CHARACTERS', 'CHECK', 'CHECKED', 'CHECKPOINT', 'CHECKSUM', 'CLASS', 'CLASS_ORIGIN', 'CLOB', 'CLOSE', 'CLUSTER', 'CLUSTERED', 'COALESCE', 'COBOL', 'COLLATE', 'COLLATION', 'COLLATION_CATALOG', 'COLLATION_NAME', 'COLLATION_SCHEMA', 'COLLECT', 'COLUMN', 'COLUMN_NAME', 'COLUMNS', 'COMMAND_FUNCTION', 'COMMAND_FUNCTION_CODE', 'COMMENT', 'COMMIT', 'COMMITTED', 'COMPLETION', 'COMPRESS', 'COMPUTE', 'CONDITION', 'CONDITION_NUMBER', 'CONNECT', 'CONNECTION', 'CONNECTION_NAME', 'CONSTRAINT', 'CONSTRAINT_CATALOG', 'CONSTRAINT_NAME', 'CONSTRAINT_SCHEMA', 'CONSTRAINTS', 'CONSTRUCTOR', 'CONTAINS', 'CONTAINSTABLE', 'CONTINUE', 'CONVERSION', 'CONVERT', 'COPY', 'CORR', 'CORRESPONDING', 'COUNT', 'COVAR_POP', 'COVAR_SAMP', 'CREATE', 'CREATEDB', 'CREATEROLE', 'CREATEUSER', 'CROSS', 'CSV', 'CUBE', 'CUME_DIST', 'CURRENT', 'CURRENT_DATE', 'CURRENT_DEFAULT_TRANSFORM_GROUP', 'CURRENT_PATH', 'CURRENT_ROLE', 'CURRENT_TIME', 'CURRENT_TIMESTAMP', 'CURRENT_TRANSFORM_GROUP_FOR_TYPE', 'CURRENT_USER', 'CURSOR', 'CURSOR_NAME', 'CYCLE', 'DATA', 'DATABASE', 'DATABASES', 'DATE', 'DATETIME', 'DATETIME_INTERVAL_CODE', 'DATETIME_INTERVAL_PRECISION', 'DAY', 'DAY_HOUR', 'DAY_MICROSECOND', 'DAY_MINUTE', 'DAY_SECOND', 'DAYOFMONTH', 'DAYOFWEEK', 'DAYOFYEAR', 'DBCC', 'DEALLOCATE', 'DEC', 'DECIMAL', 'DECLARE', 'DEFAULT', 'DEFAULTS', 'DEFERRABLE', 'DEFERRED', 'DEFINED', 'DEFINER', 'DEGREE', 'DELAY_KEY_WRITE', 'DELAYED', 'DELETE', 'DELIMITER', 'DELIMITERS', 'DENSE_RANK', 'DENY', 'DEPTH', 'DEREF', 'DERIVED', 'DESC', 'DESCRIBE', 'DESCRIPTOR', 'DESTROY', 'DESTRUCTOR', 'DETERMINISTIC', 'DIAGNOSTICS', 'DICTIONARY', 
@@ -33,13 +39,13 @@ class PHPCodeHandler implements ICodeHandler {
 				'pattern' => SyntaxHighlighter::REGEX_STRING_QUOTES,
 				'wrapper' => 'php-str',
 				'handler' => [
-					'/^.\s*SELECT|UPDATE|INSERT|DELETE|CREATE|DROP\s/' => [
+					SQLCodeHandler::REGEX_MATCH => [
 						'pattern' => sprintf('/\b(%s)\b/', implode('|', $sql_keywords)),
 						'wrapper' => 'keyword',
 					]
 				]
 				/*'handler' => [
-					'/^.\s*SELECT|UPDATE|INSERT|DELETE|CREATE|DROP\s/' => 'sql'
+					SQLCodeHandler::REGEX_MATCH => 'sql'
 				]*/
 			],
 			[
@@ -47,12 +53,46 @@ class PHPCodeHandler implements ICodeHandler {
 				'wrapper' => 'php-var',
 			],
 			[
-				'pattern' => sprintf('/\b(%s)\b/', implode('|', $php_keywords)),
+				'pattern' => sprintf('/\b(%s)\b/', implode('|', $this->m_keywords)),
 				'wrapper' => 'keyword',
 			],
 		], $code);
 		
 		return $code;
+	}
+	
+	public function GetReplacements() {
+		return [
+			[
+				'pattern' => [
+					// this will be incorrect if "//" or "/*" is inside a string
+					SyntaxHighlighter::REGEX_COMMENT_C99,
+					SyntaxHighlighter::REGEX_COMMENT_C89,
+				],
+				'wrapper' => 'comment',
+			],
+			[
+				'pattern' => SyntaxHighlighter::REGEX_STRING_QUOTES,
+				'wrapper' => 'php-str',
+				'handler' => [
+					SQLCodeHandler::REGEX_MATCH => [
+						'pattern' => sprintf('/\b(%s)\b/', implode('|', $sql_keywords)),
+						'wrapper' => 'keyword',
+					]
+				]
+				/*'handler' => [
+					SQLCodeHandler::REGEX_MATCH => 'sql'
+				]*/
+			],
+			[
+				'pattern' => '|\$[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*|',
+				'wrapper' => 'php-var',
+			],
+			[
+				'pattern' => sprintf('/\b(%s)\b/', implode('|', $this->m_keywords)),
+				'wrapper' => 'keyword',
+			],
+		];
 	}
 }
 
