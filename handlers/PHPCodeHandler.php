@@ -6,8 +6,22 @@ require_once(__dir__.'/SQLCodeHandler.php');
 
 class PHPCodeHandler extends BaseCodeHandler {
 	
-	const REGEX_STRING_HEREDOC = '/([<]{3})([^\n]+)(.*)(^\2;?$)/sm';
-	const REGEX_STRING_NOWDOC = '/([<]{3})([^\n]+)(.*)(^\2;?$)/sm';
+	// single-quotes around nowdoc identifier
+	const REGEX_STRING_NOWDOC = "/(&lt;){3}'([a-z_][a-z0-9_]*+)'$(.*?)(^\\2;?$)/ims";
+	// optional double-quotes around heredoc identifier
+	const REGEX_STRING_HEREDOC = '/(&lt;){3}("?)([a-z_][a-z0-9_]*+)\2$(.*?)(^\3;?$)/ims';
+	// sprintf('%1$s%2$s%3$s%2$s%4$s%5$s', $match[1], $match[2], $match[3], $match[4], $match[5]);
+	
+	// parsing in double-quoted & heredoc strings
+	// $name
+	// $foo->foo
+	// {$foo->bar[1]}
+	// {$arr['foo'][3]}
+	// {$const(DB_OBJ_TYPE_PAGE)} // this works, but it might be incorrect
+	// {${$name}}
+	// {${getName()}}
+	
+	
 	
 	private $m_keywords;
 	
@@ -30,7 +44,11 @@ class PHPCodeHandler extends BaseCodeHandler {
 				'wrapper' => 'comment',
 			],
 			[
-				'pattern' => SyntaxHighlighter::REGEX_STRING_QUOTES,
+				'pattern' => [
+					self::REGEX_STRING_NOWDOC,
+					self::REGEX_STRING_HEREDOC,
+					SyntaxHighlighter::REGEX_STRING_QUOTES,
+				],
 				'wrapper' => 'php-str',
 				'handler' => [
 					SQLCodeHandler::REGEX_PROBE => 'sql'
