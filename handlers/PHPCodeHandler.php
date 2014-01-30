@@ -6,6 +6,9 @@ require_once(__dir__.'/SQLCodeHandler.php');
 
 class PHPCodeHandler extends BaseCodeHandler {
 	
+	const REGEX_STRING_HEREDOC = '/([<]{3})([^\n]+)(.*)(^\2;?$)/sm';
+	const REGEX_STRING_NOWDOC = '/([<]{3})([^\n]+)(.*)(^\2;?$)/sm';
+	
 	private $m_keywords;
 	
 	public function __construct() {

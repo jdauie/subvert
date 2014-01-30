@@ -109,6 +109,8 @@ class ReplacementManager2 {
 			if (is_int($key) || (!empty($key) && preg_match($key, $text))) {
 				
 				if (is_string($handler)) {
+					// ?
+					//$this->AddReplacedValue($element);
 					$text = SyntaxHighlighter::Execute($text, [$handler => NULL]);
 				}
 				else {
