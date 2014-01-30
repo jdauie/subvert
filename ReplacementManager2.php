@@ -107,12 +107,18 @@ class ReplacementManager2 {
 	public function AddRegexMatches(array $handlers, $text) {
 		foreach ($handlers as $key => $handler) {
 			if (is_int($key) || (!empty($key) && preg_match($key, $text))) {
-				$text = $this->AddRegexMatchesBasic(
-					$handler['pattern'],
-					$handler['wrapper'],
-					$text,
-					(isset($handler['handler']) ? $handler['handler'] : NULL)
-				);
+				
+				if (is_string($handler)) {
+					$text = SyntaxHighlighter::Execute($text, [$handler => NULL]);
+				}
+				else {
+					$text = $this->AddRegexMatchesBasic(
+						$handler['pattern'],
+						$handler['wrapper'],
+						$text,
+						(isset($handler['handler']) ? $handler['handler'] : NULL)
+					);
+				}
 			}
 		}
 		return $this->Reconstitute($text);
