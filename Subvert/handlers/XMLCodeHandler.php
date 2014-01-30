@@ -2,12 +2,10 @@
 
 namespace Jacere;
 
-class XMLCodeHandler implements ICodeHandler {
+class XMLCodeHandler extends BaseCodeHandler {
 	
-	public function Handle($code) {
-		$rm = new ReplacementManager2();
-		
-		$code = $rm->AddRegexMatches([
+	public function GetReplacements() {
+		return [
 			[
 				'pattern' => '`(&lt;/?)([^&\s!][^&\s]*+)(.*?)(&gt;)`',
 				'wrapper' => [
@@ -28,9 +26,7 @@ class XMLCodeHandler implements ICodeHandler {
 					]
 				]
 			],
-		], $code);
-		
-		return $code;
+		];
 	}
 }
 

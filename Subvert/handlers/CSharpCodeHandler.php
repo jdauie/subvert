@@ -2,7 +2,7 @@
 
 namespace Jacere;
 
-class CSharpCodeHandler implements ICodeHandler {
+class CSharpCodeHandler extends BaseCodeHandler {
 	
 	private $m_keywords;
 	
@@ -15,36 +15,25 @@ class CSharpCodeHandler implements ICodeHandler {
 		];
 	}
 	
-	public function Handle($code) {
-		$rm = new ReplacementManager2();
-		
-		// comments
-		$code = $rm->AddRegexMatchesBasic(
+	public function GetReplacements() {
+		return [
 			[
-				// this will be incorrect if "//" or "/*" is inside a string
-				SyntaxHighlighter::REGEX_COMMENT_C99,
-				SyntaxHighlighter::REGEX_COMMENT_C89,
+				'pattern' => [
+					// this will be incorrect if "//" or "/*" is inside a string
+					SyntaxHighlighter::REGEX_COMMENT_C99,
+					SyntaxHighlighter::REGEX_COMMENT_C89,
+				],
+				'wrapper' => 'comment',
 			],
-			'comment',
-			$code
-		);
-		
-		// strings/chars
-		$code = $rm->AddRegexMatchesBasic(
-			SyntaxHighlighter::REGEX_STRING_QUOTES,
-			'php-str',
-			$code
-		);
-		
-		$code = $rm->AddRegexMatchesBasic(
-			sprintf('/\b(%s)\b/', implode('|', $this->m_keywords)),
-			'keyword',
-			$code
-		);
-		
-		$code = $rm->Reconstitute($code);
-		
-		return $code;
+			[
+				'pattern' => SyntaxHighlighter::REGEX_STRING_QUOTES,
+				'wrapper' => 'php-str',
+			],
+			[
+				'pattern' => sprintf('/\b(%s)\b/', implode('|', $this->m_keywords)),
+				'wrapper' => 'keyword',
+			],
+		];
 	}
 }
 

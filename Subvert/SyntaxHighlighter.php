@@ -8,24 +8,15 @@ interface ICodeHandler {
 	public function Handle($code);
 }
 
-<?php
-
-namespace Jacere;
-
-require_once(__dir__.'/SQLCodeHandler.php');
-
 class BaseCodeHandler implements ICodeHandler {
 	
-	private $m_rm;
-	
-	public function Reset($rm) {
-		$this->m_rm = $rm;
+	public function Handle($code) {
+		$rm = new ReplacementManager2();
+		$replacements = $this->GetReplacements();
+		$code = $rm->AddRegexMatches($replacements, $code);
+		return $code;
 	}
-	
-	public abstract function Handle($code, $options);
 }
-
-?>
 
 class SyntaxHighlighter {
 	
@@ -37,6 +28,7 @@ class SyntaxHighlighter {
 	const REGEX_STRING_QUOTES = '/([\'"])(?:(?!(\1|[\\\\])).)*(?:\\\\.(?:(?!(\1|[\\\\])).)*)*\1/sx';
 	
 	private static $c_handlers;
+	private static $c_instances;
 
 	public static function Execute($code, $handlers) {
 		if (self::$c_handlers === NULL) {
@@ -47,20 +39,28 @@ class SyntaxHighlighter {
 				'php'    => 'PHPCodeHandler',
 				'phps'   => 'PHPSerializedCodeHandler',
 				'csharp' => 'CSharpCodeHandler',
+				'sql'    => 'SQLCodeHandler',
 			];
+			self::$c_instances = [];
 		}
 		
 		if (is_array($handlers)) {
 			foreach ($handlers as $name => $options) {
 				if (isset(self::$c_handlers[$name])) {
-					$class_name = self::$c_handlers[$name];
-					$class_name_qualified = sprintf('Jacere\%s', $class_name);
-					$file_path = sprintf('%s/handlers/%s.php', __DIR__, $class_name);
-					if (file_exists($file_path)) {
-						require_once($file_path);
-						$instance = new $class_name_qualified();
-						$code = $instance->Handle($code, $options);
+					if (isset(self::$c_instances[$name])) {
+						$instance = self::$c_instances[$name];
 					}
+					else {
+						$class_name = self::$c_handlers[$name];
+						$class_name_qualified = sprintf('Jacere\%s', $class_name);
+						$file_path = sprintf('%s/handlers/%s.php', __DIR__, $class_name);
+						if (file_exists($file_path)) {
+							require_once($file_path);
+							$instance = new $class_name_qualified();
+							self::$c_instances[$name] = $instance;
+						}
+					}
+					$code = $instance->Handle($code, $options);
 				}
 			}
 		}
