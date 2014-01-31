@@ -25,7 +25,8 @@ class SyntaxHighlighter {
 	
 	const REGEX_STRING_DOUBLE = '/"[^"\\\\]*(?:\\\\.[^"\\\\]*)*"/s'; // double-quoted string
 	const REGEX_STRING_SINGLE = "/'[^'\\\\]*(?:\\\\.[^'\\\\]*)*'/s"; // single-quoted string
-	const REGEX_STRING_QUOTES = '/(?<quote>[\'"])(?<string>(?:(?!(\1|[\\\\])).)*(?:\\\\.(?:(?!(\1|[\\\\])).)*)*)\1/s';
+	//const REGEX_STRING_QUOTES = '/([\'"])((?:(?!(\1|[\\\\])).)*(?:\\\\.(?:(?!(\1|[\\\\])).)*)*)\1/s';
+	const REGEX_STRING_QUOTES = '/(?<start>[\'"])(?<string>(?:(?!(\1|[\\\\])).)*(?:\\\\.(?:(?!(\1|[\\\\])).)*)*)(?<end>\1)/sx';
 	
 	private static $c_handlers;
 	private static $c_instances;
