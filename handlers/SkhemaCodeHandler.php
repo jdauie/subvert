@@ -2,29 +2,32 @@
 
 namespace Jacere;
 
+require_once(__dir__.'/../BaseCodeHandler.php');
+
 class SkhemaCodeHandler extends BaseCodeHandler {
 	
-	public function GetReplacements() {
+	public function GetPatterns() {
 		return [
-			[
-				'pattern' => '`({)(.)([^}]*+)(})`',
-				'wrapper' => [
-					'skh-del',
-					'skh-sym',
-					'skh-tok',
-					'skh-del',
+			new CodePattern(
+				'`(?<start>{)(?<type>.)(?<token>[^}]*+)(?<end>})`',
+				['start', 'type', 'token', 'end'],
+				[
+					NULL    => 'skh-del',
+					'type'  => 'skh-sym',
+					'token' => 'skh-tok',
 				],
-				'handler' => [
-					'3:' => [
-						'pattern' => '`(:)([^[]++)(\[[^]]*+\])?`',
-						'wrapper' => [
-							'skh-sym',
-							'keyword',
-							'xml-att',
+				[
+					'token' => new CodePattern(
+						'`(?<delim>:)(?<name>[^[]++)(?<options>\[[^]]*+\])?`',
+						['delim', 'name', 'options'],
+						[
+							'delim'   => 'skh-sym',
+							'name'    => 'keyword',
+							'options' => 'xml-att',
 						]
-					]
+					)
 				]
-			],
+			),
 		];
 	}
 }

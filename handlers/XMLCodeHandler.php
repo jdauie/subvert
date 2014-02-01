@@ -2,30 +2,29 @@
 
 namespace Jacere;
 
+require_once(__dir__.'/../BaseCodeHandler.php');
+
 class XMLCodeHandler extends BaseCodeHandler {
 	
-	public function GetReplacements() {
+	public function GetPatterns() {
 		return [
-			[
-				'pattern' => '`(&lt;/?)([^&\s!][^&\s]*+)(.*?)(&gt;)`',
-				'wrapper' => [
-					NULL,
-					'xml-tag',
-					NULL,
-					NULL,
+			new CodePattern(
+				'`(?<start>&lt;/?)(?<name>[^&\s!][^&\s]*+)(?<attributes>.*?)(?<end>&gt;)`',
+				['start', 'name', 'attributes', 'end'],
+				[
+					'name' => 'xml-tag',
 				],
-				'handler' => [
-					'3:' => [
-						'pattern' => '/(\s++)([^=]++)(=)(\s*"[^"]*+")/',
-						'wrapper' => [
-							NULL,
-							'xml-att',
-							NULL,
-							'xml-val',
+				[
+					'attributes' => new CodePattern(
+						'`(?<name>(\s++)([^=]++))(?<equals>=)(?<value>\s*"[^"]*+")`',
+						['name', 'equals', 'value'],
+						[
+							'name'  => 'xml-att',
+							'value' => 'xml-val',
 						]
-					]
+					)
 				]
-			],
+			),
 		];
 	}
 }
