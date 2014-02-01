@@ -44,8 +44,19 @@ class PHPCodeHandler extends BaseCodeHandler {
 				'comment'
 			),
 			new DelimitedCodePattern(
+				self::REGEX_STRING_HEREDOC,
 				[
-					self::REGEX_STRING_HEREDOC,
+					'start' => 'skh-sym',
+					'value' => 'php-str',
+					'end'   => 'skh-sym',
+				],
+				[
+					'value' => 'sql',
+				]
+			),
+			new DelimitedCodePattern(
+				[
+					//self::REGEX_STRING_HEREDOC,
 					SyntaxHighlighter::REGEX_STRING_QUOTES,
 				],
 				'php-str',
