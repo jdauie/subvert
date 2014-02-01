@@ -2,18 +2,20 @@
 
 namespace Jacere;
 
+require_once(__dir__.'/../BaseCodeHandler.php');
+
 class PHPSerializedCodeHandler extends BaseCodeHandler {
 	
-	public function GetReplacements() {
+	public function GetPatterns() {
 		return [
-			[
-				'pattern' => SyntaxHighlighter::REGEX_STRING_DOUBLE,
-				'wrapper' => 'de-emphasize',
-			],
-			[
-				'pattern' => '/[sibaON](?=[:;])/s',
-				'wrapper' => 'keyword',
-			],
+			new DelimitedCodePattern(
+				SyntaxHighlighter::REGEX_STRING_DOUBLE,
+				'php-str'
+			),
+			new BasicCodePattern(
+				'/[sibaON](?=[:;])/s',
+				'keyword'
+			),
 		];
 	}
 }

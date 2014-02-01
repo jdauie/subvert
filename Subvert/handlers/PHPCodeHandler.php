@@ -2,15 +2,15 @@
 
 namespace Jacere;
 
-require_once(__dir__.'/SQLCodeHandler.php');
+require_once(__dir__.'/../BaseCodeHandler.php');
 
 class PHPCodeHandler extends BaseCodeHandler {
 	
 	// single-quotes around nowdoc identifier
-	const REGEX_STRING_NOWDOC = "/(&lt;){3}'([a-z_][a-z0-9_]*+)'$(.*?)(^\\2;?$)/ims";
+	//const REGEX_STRING_NOWDOC = "/(&lt;){3}'([a-z_][a-z0-9_]*+)'$(.*?)(^\\2;?$)/ims";
 	// optional double-quotes around heredoc identifier
-	const REGEX_STRING_HEREDOC = '/(&lt;){3}("?)([a-z_][a-z0-9_]*+)\2$(.*?)(^\3;?$)/ims';
-	// sprintf('%1$s%2$s%3$s%2$s%4$s%5$s', $match[1], $match[2], $match[3], $match[4], $match[5]);
+	//const REGEX_STRING_HEREDOC = '/(?<start>(&lt;){3}("?)([a-z_][a-z0-9_]*+)\3)$(?<value>.*?)^(?<end>\4;?)$/ims';
+	const REGEX_STRING_HEREDOC = '/(?<start>(&lt;){3}(?<quote>["\']?)([a-z_][a-z0-9_]*+)\3)$(?<value>.*?)^(?<end>\4;?)$/ims';
 	
 	// parsing in double-quoted & heredoc strings
 	// $name
@@ -23,45 +23,44 @@ class PHPCodeHandler extends BaseCodeHandler {
 	
 	
 	
-	private $m_keywords;
+	private $m_keywords_pattern;
 	
 	public function __construct() {
-		$this->m_keywords = [
+		$keywords = [
 			'break', 'clone', 'endswitch', 'final', 'global', 'include_once', 'private', 'return', 'try', 'xor', 'abstract', 'callable', 'const', 'do', 'enddeclare', 'endwhile', 'finally', 'goto', 'instanceof', 'namespace', 'protected', 'static', 'yield', 'and', 'case', 'continue', 'echo', 'endfor', 'for', 'if', 'insteadof', 'new', 'public', 'switch', 'use', 'catch', 'declare', 'else', 'endforeach', 'foreach', 'implements', 'interface', 'or', 'require', 'throw', 'var', 'as', 'class', 'default', 'elseif', 'endif', 'extends', 'function', 'include', 'print', 'require_once', 'trait', 'while',
 			'__CLASS__', '__DIR__', '__FILE__', '__FUNCTION__', '__LINE__', '__METHOD__', '__NAMESPACE__', '__TRAIT__',
 			'__halt_compiler', 'die', 'empty', 'list', 'unset', 'unset', 'eval', 'array', 'exit', 'isset'
 		];
+		$this->m_keywords_pattern = sprintf('/\b(%s)\b/', implode('|', $keywords));
 	}
 	
-	public function GetReplacements() {
+	public function GetPatterns() {
 		return [
-			[
-				'pattern' => [
-					// this will be incorrect if "//" or "/*" is inside a string
+			new BasicCodePattern(
+				[
 					SyntaxHighlighter::REGEX_COMMENT_C99,
 					SyntaxHighlighter::REGEX_COMMENT_C89,
 				],
-				'wrapper' => 'comment',
-			],
-			[
-				'pattern' => [
-					self::REGEX_STRING_NOWDOC,
+				'comment'
+			),
+			new DelimitedCodePattern(
+				[
 					self::REGEX_STRING_HEREDOC,
 					SyntaxHighlighter::REGEX_STRING_QUOTES,
 				],
-				'wrapper' => 'php-str',
-				'handler' => [
-					SQLCodeHandler::REGEX_PROBE => 'sql'
+				'php-str',
+				[
+					'value' => 'sql',
 				]
-			],
-			[
-				'pattern' => '|\$[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*|',
-				'wrapper' => 'php-var',
-			],
-			[
-				'pattern' => sprintf('/\b(%s)\b/', implode('|', $this->m_keywords)),
-				'wrapper' => 'keyword',
-			],
+			),
+			new BasicCodePattern(
+				'|\$[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*|',
+				'php-var'
+			),
+			new BasicCodePattern(
+				$this->m_keywords_pattern,
+				'keyword'
+			),
 		];
 	}
 }
