@@ -62,6 +62,10 @@ class PHPCodeHandler extends BaseCodeHandler {
 				'php-str',
 				[
 					'value' => 'sql',
+					/*'value' => new BasicCodePattern(
+						'`{\$[^}]++}`',
+						'xml-att'
+					)*/
 				]
 			),
 			new BasicCodePattern(
