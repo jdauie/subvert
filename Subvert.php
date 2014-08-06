@@ -10,6 +10,7 @@ class Subvert {
 	private $m_text;
 	
 	private $m_rootURL;
+	private $m_imageCallback;
 	private $m_enableCodeFormatting;
 	private $m_headerLevel;
 	
@@ -20,6 +21,8 @@ class Subvert {
 	private function __construct($text, $options) {
 		$this->m_text = $text;
 		$this->m_rootURL = rtrim($options['root_url'], '/');
+		$this->m_imageCallback = $options['image_callback'];
+		$this->m_linkCallback = $options['link_callback'];
 		$this->m_enableCodeFormatting = $options['code_formatting'];
 		$this->m_headerLevel = $options['header_level'];
 	}
@@ -28,6 +31,14 @@ class Subvert {
 		$valid_options = [
 			'root_url' => [
 				'validate' => 'is_string',
+				'default' => NULL,
+			],
+			'image_callback' => [
+				'validate' => 'is_callable',
+				'default' => NULL,
+			],
+			'link_callback' => [
+				'validate' => 'is_callable',
 				'default' => NULL,
 			],
 			'code_formatting' => [
@@ -90,7 +101,7 @@ class Subvert {
 		return $attributes;
 	}
 	
-	private function GetAttributeString($match, $attributes, $extra = NULL) {
+	private function GetAttributeString($match, $attributes, $extra = NULL, $filter = NULL) {
 		$attribute_pairs = ($extra && isset($match[$extra])) ? $this->ParseExtra($match[$extra]) : [];
 		
 		foreach ($attributes as $name => $required) {
@@ -104,23 +115,14 @@ class Subvert {
 						}
 					}
 				}
-
-				// THIS NEEDS TO BE DONE WITH A CALLBACK -- IT IS WAY TOO SPECIFIC
-
-				// add dimensions to url
-				if ($name === 'src' && (isset($attribute_pairs['width']) || isset($attribute_pairs['height']))) {
-					$width = isset($attribute_pairs['width']) ? $attribute_pairs['width'] : '0';
-					$height = isset($attribute_pairs['height']) ? $attribute_pairs['height'] : '0';
-
-					if (ctype_digit($width) && ctype_digit($height)) {
-						$path_parts = pathinfo($value);
-						$value = sprintf('%s/%sx%s/%s', $path_parts['dirname'], $width, $height, $path_parts['basename']);
-					}
-				}
 				$attribute_pairs[$name] = $value;
 			}
 		}
-		
+
+		if ($filter) {
+			$filter($attribute_pairs);
+		}
+
 		$attribute_strings = [];
 		foreach ($attribute_pairs as $name => $value) {
 			$attribute_strings[] = sprintf(' %s="%s"', $name, $value);
@@ -273,7 +275,7 @@ class Subvert {
 						'src' => true,
 						'alt' => true,
 						'title' => false,
-					], 'extra');
+					], 'extra', $this->m_imageCallback);
 					$element = sprintf('<img%s />', $attr_str);
 					$rm->Add($match[0], $element);
 				}
@@ -290,7 +292,7 @@ class Subvert {
 						'src' => true,
 						'alt' => true,
 						'title' => false,
-					], 'extra');
+					], 'extra', $this->m_imageCallback);
 					$element = sprintf('<img%s />', $attr_str);
 					$rm->Add($match[0], $element);
 				}
@@ -304,7 +306,7 @@ class Subvert {
 				$attr_str = $this->GetAttributeString($match, [
 					'href' => true,
 					'title' => false,
-				]);
+				], NULL, $this->m_linkCallback);
 				$element = sprintf('<a%s>%s</a>', $attr_str, $match['text']);
 				$rm->Add($match[0], $element);
 			}
@@ -323,7 +325,7 @@ class Subvert {
 				$attr_str = $this->GetAttributeString($match, [
 					'href' => true,
 					'title' => false,
-				]);
+				], NULL, $this->m_linkCallback);
 				$element = sprintf('<a%s>%s</a>', $attr_str, $match['text']);
 				$rm->Add($match[0], $element);
 			}
