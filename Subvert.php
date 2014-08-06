@@ -104,6 +104,19 @@ class Subvert {
 						}
 					}
 				}
+
+				// THIS NEEDS TO BE DONE WITH A CALLBACK -- IT IS WAY TOO SPECIFIC
+
+				// add dimensions to url
+				if ($name === 'src' && (isset($attribute_pairs['width']) || isset($attribute_pairs['height']))) {
+					$width = isset($attribute_pairs['width']) ? $attribute_pairs['width'] : '0';
+					$height = isset($attribute_pairs['height']) ? $attribute_pairs['height'] : '0';
+
+					if (ctype_digit($width) && ctype_digit($height)) {
+						$path_parts = pathinfo($value);
+						$value = sprintf('%s/%sx%s/%s', $path_parts['dirname'], $width, $height, $path_parts['basename']);
+					}
+				}
 				$attribute_pairs[$name] = $value;
 			}
 		}
