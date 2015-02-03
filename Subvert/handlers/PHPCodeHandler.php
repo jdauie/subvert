@@ -51,7 +51,7 @@ class PHPCodeHandler extends BaseCodeHandler {
 					'end'   => 'skh-sym',
 				],
 				[
-					'value' => 'sql',
+					'value' => 'sql'
 				]
 			),
 			new DelimitedCodePattern(
