@@ -26,6 +26,14 @@ class SQLCodeHandler extends BaseCodeHandler {
 				$this->m_keywords_pattern,
 				'keyword'
 			),
+			new BasicCodePattern(
+				'|:\w+|',
+				'php-var2'
+			),
+			new BasicCodePattern(
+				'|\w+\.(?=\w+)|',
+				'xml-att'
+			),
 		];
 	}
 	
