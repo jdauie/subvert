@@ -1,6 +1,6 @@
 <?php
 
-namespace Jacere;
+namespace Jacere\Subvert;
 
 class ReplacementManager2 {
 	
@@ -45,7 +45,7 @@ class ReplacementManager2 {
 		return implode("\n", $output);
 	}
 	
-	public function AddRegexMatchesBasic($pattern, $text) {
+	public function AddRegexMatchesBasic(CodePattern $pattern, $text) {
 		
 		$text = preg_replace_callback($pattern->GetPatterns(), function ($match) use ($pattern) {
 			
@@ -58,13 +58,13 @@ class ReplacementManager2 {
 				if (isset($match[$name])) {
 					$region = $match[$name];
 					
-					// check handlers
+					// check Handlers
 					if (isset($handlers[$name])) {
 						$handler_set = $handlers[$name];
 						if (!is_array($handler_set)) {
 							$handler_set = [$handler_set];
 						}
-						// probe handlers
+						// probe Handlers
 						foreach ($handler_set as $handler) {
 							if (is_string($handler)) {
 								$region_new = SyntaxHighlighter::Execute($region, [$handler => ['__probe' => true]]);

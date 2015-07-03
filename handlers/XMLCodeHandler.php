@@ -1,8 +1,9 @@
 <?php
 
-namespace Jacere;
+namespace Jacere\Subvert\Handlers;
 
-require_once(__dir__.'/../BaseCodeHandler.php');
+use Jacere\Subvert\BaseCodeHandler;
+use Jacere\Subvert\CodePattern;
 
 class XMLCodeHandler extends BaseCodeHandler {
 	
