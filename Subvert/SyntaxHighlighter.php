@@ -1,8 +1,6 @@
 <?php
 
-namespace Jacere;
-
-require_once(__dir__.'/ReplacementManager2.php');
+namespace Jacere\Subvert;
 
 class SyntaxHighlighter {
 	
@@ -39,14 +37,10 @@ class SyntaxHighlighter {
 						$instance = self::$c_instances[$name];
 					}
 					else {
-						$class_name = self::$c_handlers[$name];
-						$class_name_qualified = sprintf('Jacere\%s', $class_name);
-						$file_path = sprintf('%s/handlers/%s.php', __DIR__, $class_name);
-						if (file_exists($file_path)) {
-							require_once($file_path);
-							$instance = new $class_name_qualified();
-							self::$c_instances[$name] = $instance;
-						}
+						$class_name = __NAMESPACE__.'\\'.self::$c_handlers[$name];
+						/** @var BaseCodeHandler $instance */
+						$instance = new $class_name();
+						self::$c_instances[$name] = $instance;
 					}
 					if (!isset($options['__probe']) || $instance->Probe($code)) {
 						$code = $instance->Handle($code, $options);

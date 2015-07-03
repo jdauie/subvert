@@ -1,14 +1,8 @@
 <?php
 
-namespace Jacere;
+namespace Jacere\Subvert;
 
-require_once(__dir__.'/CodePattern.php');
-
-interface ICodeHandler {
-	public function Handle($code);
-}
-
-class BaseCodeHandler implements ICodeHandler {
+abstract class BaseCodeHandler {
 	
 	private $m_patterns;
 	
@@ -26,6 +20,8 @@ class BaseCodeHandler implements ICodeHandler {
 	public function Probe($code) {
 		return true;
 	}
+
+	public abstract function GetPatterns();
 }
 
 ?>

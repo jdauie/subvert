@@ -1,9 +1,6 @@
 <?php
 
-namespace Jacere;
-
-require_once(__dir__.'/ReplacementManager.php');
-require_once(__dir__.'/CodeFormatter.php');
+namespace Jacere\Subvert;
 
 class Subvert {
 	
@@ -101,7 +98,7 @@ class Subvert {
 		return $attributes;
 	}
 	
-	private function GetAttributeString($match, $attributes, $extra = NULL, $filter = NULL) {
+	private function GetAttributeString($match, $attributes, $extra = NULL, callable $filter = NULL) {
 		$attribute_pairs = ($extra && isset($match[$extra])) ? $this->ParseExtra($match[$extra]) : [];
 		
 		foreach ($attributes as $name => $required) {

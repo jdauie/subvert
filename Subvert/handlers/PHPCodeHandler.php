@@ -1,8 +1,11 @@
 <?php
 
-namespace Jacere;
+namespace Jacere\Subvert\Handlers;
 
-require_once(__dir__.'/../BaseCodeHandler.php');
+use Jacere\Subvert\BaseCodeHandler;
+use Jacere\Subvert\BasicCodePattern;
+use Jacere\Subvert\DelimitedCodePattern;
+use Jacere\Subvert\SyntaxHighlighter;
 
 class PHPCodeHandler extends BaseCodeHandler {
 	

@@ -1,8 +1,6 @@
 <?php
 
-namespace Jacere;
-
-require_once(__dir__.'/SyntaxHighlighter.php');
+namespace Jacere\Subvert;
 
 class CodeFormatter {
 	
@@ -53,12 +51,12 @@ EOS;
 	return $code;
 	}
 	
-	/*public static function Format($code, $handlers) {
+	/*public static function Format($code, $Handlers) {
 		
 		$code = htmlentities($code, ENT_NOQUOTES);
 		
-		if ($handlers) {
-			$code = SyntaxHighlighter::Execute($code, $handlers);
+		if ($Handlers) {
+			$code = SyntaxHighlighter::Execute($code, $Handlers);
 		}
 		
 		$code_lines = explode("\n", $code);

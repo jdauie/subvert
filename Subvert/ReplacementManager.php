@@ -1,6 +1,6 @@
 <?php
 
-namespace Jacere;
+namespace Jacere\Subvert;
 
 class ReplacementManager {
 	
