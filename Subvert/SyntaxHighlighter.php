@@ -37,7 +37,7 @@ class SyntaxHighlighter {
 						$instance = self::$c_instances[$name];
 					}
 					else {
-						$class_name = __NAMESPACE__.'\\'.self::$c_handlers[$name];
+						$class_name = __NAMESPACE__.'\\Handlers\\'.self::$c_handlers[$name];
 						/** @var BaseCodeHandler $instance */
 						$instance = new $class_name();
 						self::$c_instances[$name] = $instance;
